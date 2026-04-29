@@ -80,3 +80,9 @@ GET /cow/dashboard/overview
 ```
 
 也可以直接返回页面所需的数据对象。页面模型定义在 `src/types/dashboard.ts`，核心字段与 `database-design.md` 中的 `cow_basic`、`cow_dataset`、`cow_point_cloud`、`cow_image`、`video_stream_access`、`video_archive_segment` 对齐。
+
+## GitHub Pages 部署
+
+当前前端可以直接以静态站形式部署到 GitHub Pages。演示原型时不配置 `VITE_API_BASE_URL`，页面会自动使用 mock 数据。
+
+GitHub Actions 构建会执行 `npm run build`，其中包含 `tsc -b`。`tsconfig.node.json` 需要显式声明 `target` 和 `lib`，避免部署环境在检查 Vite 配置及依赖类型时缺少 `Promise.finally`、`Iterable`、`Map`、`Set` 等现代 JavaScript 类型。
