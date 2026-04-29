@@ -1,42 +1,80 @@
-export type MetricTone = "green" | "blue" | "amber" | "rose";
+export type AssetStatus = "normal" | "warning" | "offline";
 
-export interface DashboardMetric {
-  id: string;
-  label: string;
-  value: string;
-  unit?: string;
-  delta: string;
-  tone: MetricTone;
+export interface CowBasic {
+  cowNo: string;
+  pen: string;
+  breed: string;
+  gender: string;
+  ageMonth: number;
+  weightKg: number;
+  status: "在栏" | "观察" | "转出";
+  lastCollectedAt: string;
 }
 
-export interface SensorPoint {
+export interface DatasetSummary {
   id: string;
-  greenhouse: string;
-  device: string;
-  metric: "温度" | "湿度" | "光照" | "CO2" | "土壤水分";
-  value: number;
-  unit: string;
-  status: "normal" | "warning" | "offline";
-  sampledAt: string;
+  cowNo: string;
+  datasetCode: string;
+  datasetUrl: string;
+  collectedAt: string;
+  fileCount: number;
+  status: AssetStatus;
 }
 
-export interface TrendPoint {
-  label: string;
-  temperature: number;
-  humidity: number;
+export interface PointCloudSummary {
+  id: string;
+  cowNo: string;
+  pointCloudNo: string;
+  fileName: string;
+  filePath: string;
+  fileFormat: string;
+  fileSizeMb: number;
+  pointCount: number;
+  fieldSchema: Array<"x" | "y" | "z" | "r" | "g" | "b" | "label">;
+  labelCount: number;
+  processedAt: string;
+  labelStats: Array<{
+    label: string;
+    pointCount: number;
+    ratio: number;
+  }>;
 }
 
-export interface TaskSummary {
+export interface ImageAnnotation {
   id: string;
-  title: string;
-  owner: string;
-  progress: number;
-  dueAt: string;
+  cowNo: string;
+  imageType: "眼肌图" | "背膘图";
+  fileName: string;
+  measurement: string;
+  annotatedAt: string;
+  status: AssetStatus;
+}
+
+export interface VideoStream {
+  id: string;
+  cowNo: string;
+  cameraName: string;
+  pen: string;
+  playUrl: string;
+  datasetUrl: string;
+  status: AssetStatus;
+}
+
+export interface ArchiveSegment {
+  id: string;
+  cowNo: string;
+  cameraName: string;
+  startTime: string;
+  endTime: string;
+  fileSizeGb: number;
+  archiveStatus: AssetStatus;
 }
 
 export interface DashboardData {
-  metrics: DashboardMetric[];
-  sensors: SensorPoint[];
-  trends: TrendPoint[];
-  tasks: TaskSummary[];
+  cows: CowBasic[];
+  datasets: DatasetSummary[];
+  pointClouds: PointCloudSummary[];
+  images: ImageAnnotation[];
+  liveStreams: VideoStream[];
+  archives: ArchiveSegment[];
 }

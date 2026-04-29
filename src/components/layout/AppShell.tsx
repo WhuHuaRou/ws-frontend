@@ -1,24 +1,41 @@
 import type { ReactNode } from "react";
 
-const navItems = ["数据总览", "资源管理", "设备台账", "采集任务", "系统设置"];
+export type ShellNavItem = {
+  id: string;
+  label: string;
+};
 
-export function AppShell({ children }: { children: ReactNode }) {
+type AppShellProps = {
+  children: ReactNode;
+  navItems: ShellNavItem[];
+  activeNavId: string;
+  eyebrow: string;
+  title: string;
+  primaryAction?: string;
+  onNavChange: (navId: string) => void;
+};
+
+export function AppShell({ children, navItems, activeNavId, eyebrow, title, primaryAction, onNavChange }: AppShellProps) {
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="主导航">
         <div className="brand-block">
           <span className="brand-mark" aria-hidden="true" />
           <div>
-            <strong>温室中台</strong>
-            <small>Greenhouse Ops</small>
+            <strong>牛只多模态</strong>
+            <small>Cattle Data Console</small>
           </div>
         </div>
 
         <nav className="sidebar-nav">
-          {navItems.map((item, index) => (
-            <button className={index === 0 ? "nav-item nav-item-active" : "nav-item"} key={item}>
+          {navItems.map((item) => (
+            <button
+              className={activeNavId === item.id ? "nav-item nav-item-active" : "nav-item"}
+              key={item.id}
+              onClick={() => onNavChange(item.id)}
+            >
               <span className="nav-dot" aria-hidden="true" />
-              {item}
+              {item.label}
             </button>
           ))}
         </nav>
@@ -27,8 +44,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="main-area">
         <header className="topbar">
           <div>
-            <p className="eyebrow">数据展示页面</p>
-            <h1>温室运行数据展示中心</h1>
+            <p className="eyebrow">{eyebrow}</p>
+            <h1>{title}</h1>
           </div>
           <div className="topbar-actions">
             <button className="icon-button" aria-label="刷新数据">
@@ -36,7 +53,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <path d="M20 12a8 8 0 0 1-13.7 5.6M4 12A8 8 0 0 1 17.7 6.4M18 3v4h-4M6 21v-4h4" />
               </svg>
             </button>
-            <button className="primary-button">导出报表</button>
+            {primaryAction ? <button className="primary-button">{primaryAction}</button> : null}
           </div>
         </header>
         {children}

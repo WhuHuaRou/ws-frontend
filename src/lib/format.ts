@@ -1,15 +1,19 @@
-import type { SensorPoint } from "../types/dashboard";
+import type { AssetStatus } from "../types/dashboard";
 
-export function statusLabel(status: SensorPoint["status"]) {
-  const labels: Record<SensorPoint["status"], string> = {
-    normal: "正常",
-    warning: "预警",
+export function statusLabel(status: AssetStatus) {
+  const labels: Record<AssetStatus, string> = {
+    normal: "可用",
+    warning: "待核验",
     offline: "离线",
   };
 
   return labels[status];
 }
 
-export function statusClassName(status: SensorPoint["status"]) {
+export function statusClassName(status: AssetStatus) {
   return `status status-${status}`;
+}
+
+export function formatNumber(value: number) {
+  return new Intl.NumberFormat("zh-CN").format(value);
 }

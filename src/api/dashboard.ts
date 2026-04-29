@@ -8,7 +8,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     return simulateRequest(dashboardMock);
   }
 
-  const response = await fetch(`${API_BASE_URL}/dashboard/overview`, {
+  const response = await fetch(`${API_BASE_URL}/cow/dashboard/overview`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: localStorage.getItem("token") ? `Bearer ${localStorage.getItem("token")}` : "",
