@@ -94,6 +94,7 @@ export function PointCloudViewer({ pointCloud }: { pointCloud: PointCloudSummary
       return;
     }
 
+    const viewerContainer = container;
     const abortController = new AbortController();
     let disposed = false;
     setViewerState({ status: "loading", message: "正在加载点云文件" });
@@ -115,7 +116,7 @@ export function PointCloudViewer({ pointCloud }: { pointCloud: PointCloudSummary
         return;
       }
 
-      mountScene(container, parsed);
+      mountScene(viewerContainer, parsed);
       setViewerState({
         status: "ready",
         message: "点云加载完成",
@@ -252,7 +253,7 @@ export function PointCloudViewer({ pointCloud }: { pointCloud: PointCloudSummary
 
     const scene = sceneRef.current;
     if (scene) {
-      scene.traverse((object) => {
+      scene.traverse((object: THREE.Object3D) => {
         const mesh = object as THREE.Points<THREE.BufferGeometry, THREE.Material> | THREE.LineSegments;
         if ("geometry" in mesh) {
           mesh.geometry.dispose();
