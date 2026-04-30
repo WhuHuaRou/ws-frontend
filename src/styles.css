@@ -502,6 +502,167 @@ td span {
   margin-bottom: 18px;
 }
 
+.point-cloud-record-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.point-cloud-workspace {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.point-cloud-sidebar {
+  align-self: start;
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.point-cloud-sidebar-title h2 {
+  margin: 4px 0 0;
+  color: #16242a;
+  font-size: 18px;
+}
+
+.point-cloud-search {
+  min-width: 0;
+}
+
+.point-cloud-count {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  border-top: 1px solid rgba(58, 71, 78, 0.12);
+  padding-top: 12px;
+}
+
+.point-cloud-count strong {
+  color: #16242a;
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.point-cloud-count span {
+  color: #69767a;
+  font-size: 13px;
+}
+
+.point-cloud-list-items {
+  display: grid;
+  gap: 4px;
+}
+
+.point-cloud-list-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "name count"
+    "cow count";
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 3px;
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #293940;
+  cursor: pointer;
+  padding: 8px 10px 8px 12px;
+  text-align: left;
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.point-cloud-list-item:hover,
+.point-cloud-list-item-active {
+  background: #e9f1ef;
+}
+
+.point-cloud-list-item-active::before {
+  position: absolute;
+  inset: 8px auto 8px 0;
+  width: 3px;
+  border-radius: 999px;
+  background: #1f5965;
+  content: "";
+}
+
+.point-cloud-list-item:active {
+  transform: translateY(1px);
+}
+
+.point-cloud-list-item strong {
+  grid-area: name;
+  color: #16242a;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.point-cloud-list-item span,
+.point-cloud-list-item em {
+  color: #69767a;
+  font-size: 12px;
+}
+
+.point-cloud-list-item span {
+  grid-area: cow;
+}
+
+.point-cloud-list-item em {
+  grid-area: count;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.point-cloud-empty {
+  display: grid;
+  gap: 6px;
+  border: 1px dashed rgba(58, 71, 78, 0.18);
+  border-radius: 8px;
+  background: #f8faf8;
+  color: #69767a;
+  padding: 18px;
+}
+
+.point-cloud-empty strong {
+  color: #293940;
+}
+
+.point-cloud-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid rgba(58, 71, 78, 0.12);
+  padding-top: 12px;
+}
+
+.point-cloud-pagination .viewer-reset-button {
+  min-height: 30px;
+  padding: 0 9px;
+  font-size: 12px;
+}
+
+.point-cloud-pagination span {
+  color: #69767a;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.point-cloud-panel {
+  gap: 18px;
+}
+
 .point-cloud-file {
   display: grid;
   gap: 10px;
@@ -531,6 +692,139 @@ td span {
 
 .point-cloud-summary strong {
   font-size: 22px;
+}
+
+.point-viewer-shell {
+  overflow: hidden;
+  border: 1px solid rgba(58, 71, 78, 0.12);
+  border-radius: 8px;
+  background: #f8faf8;
+}
+
+.point-viewer-canvas {
+  position: relative;
+  height: 420px;
+  min-height: 320px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, #fbfcfb 0%, #eef4f1 100%);
+}
+
+.point-viewer-canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.point-viewer-canvas canvas:active {
+  cursor: grabbing;
+}
+
+.point-viewer-state {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  color: #69767a;
+  padding: 20px;
+  text-align: center;
+}
+
+.point-viewer-state strong {
+  color: #293940;
+  font-size: 15px;
+}
+
+.point-viewer-state span {
+  color: #69767a;
+  font-size: 13px;
+}
+
+.point-viewer-state-loading::before {
+  display: block;
+  width: min(360px, 64vw);
+  height: 8px;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(31, 89, 101, 0.12), rgba(31, 89, 101, 0.34), rgba(31, 89, 101, 0.12));
+  content: "";
+  animation: pointLoad 1.2s ease-in-out infinite;
+}
+
+.point-viewer-state-error strong {
+  color: #8b3d2f;
+}
+
+.point-viewer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-top: 1px solid rgba(58, 71, 78, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  padding: 12px 14px;
+}
+
+.point-viewer-footer div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.point-viewer-footer strong {
+  color: #16242a;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.point-viewer-footer span {
+  color: #69767a;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.viewer-reset-button {
+  flex: 0 0 auto;
+  min-height: 34px;
+  border: 1px solid rgba(31, 89, 101, 0.2);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #173e46;
+  cursor: pointer;
+  padding: 0 12px;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.viewer-reset-button:hover:not(:disabled) {
+  border-color: rgba(31, 89, 101, 0.42);
+  background: #e5eeec;
+}
+
+.viewer-reset-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.viewer-reset-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+@keyframes pointLoad {
+  0%,
+  100% {
+    opacity: 0.38;
+    transform: scaleX(0.72);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
 }
 
 .field-schema {
@@ -852,6 +1146,10 @@ td strong {
   .side-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .point-cloud-workspace {
+    grid-template-columns: 250px minmax(0, 1fr);
+  }
 }
 
 @media (max-width: 720px) {
@@ -881,8 +1179,18 @@ td strong {
   .image-strip,
   .record-grid,
   .image-record-grid,
-  .point-cloud-summary {
+  .point-cloud-summary,
+  .point-cloud-workspace {
     grid-template-columns: 1fr;
+  }
+
+  .point-viewer-canvas {
+    height: 300px;
+    min-height: 260px;
+  }
+
+  .point-viewer-footer {
+    display: grid;
   }
 
   .search-field {

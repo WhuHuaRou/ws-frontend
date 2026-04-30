@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { PointCloudViewer } from "../../components/point-cloud/PointCloudViewer";
 import { formatNumber } from "../../lib/format";
 import type { PointCloudSummary } from "../../types/dashboard";
 
@@ -14,56 +15,162 @@ const fieldDescriptions: Record<PointField, { name: string; detail: string }> = 
   label: { name: "Label 标签", detail: "点所属的分类标签，可映射到背部、腹部、腿部等业务含义。" },
 };
 
+const pageSize = 10;
+
 export function PointCloudDataPage({ pointClouds }: { pointClouds: PointCloudSummary[] }) {
   const [activeField, setActiveField] = useState<PointField>("x");
+  const [query, setQuery] = useState("");
+  const [selectedId, setSelectedId] = useState(pointClouds[0]?.id ?? "");
+  const [page, setPage] = useState(1);
   const activeFieldInfo = fieldDescriptions[activeField];
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredPointClouds = useMemo(
+    () =>
+      normalizedQuery
+        ? pointClouds.filter((pointCloud) =>
+            [pointCloud.cowNo, pointCloud.pointCloudNo, pointCloud.fileName, pointCloud.filePath]
+              .join(" ")
+              .toLowerCase()
+              .includes(normalizedQuery),
+          )
+        : pointClouds,
+    [normalizedQuery, pointClouds],
+  );
+  const pageCount = Math.max(1, Math.ceil(filteredPointClouds.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const visiblePointClouds = filteredPointClouds.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const selectedPointCloud =
+    filteredPointClouds.find((pointCloud) => pointCloud.id === selectedId) ?? filteredPointClouds[0] ?? null;
+
+  useEffect(() => {
+    setPage(1);
+  }, [normalizedQuery]);
+
+  useEffect(() => {
+    if (!filteredPointClouds.length) {
+      setSelectedId("");
+      return;
+    }
+    if (!filteredPointClouds.some((pointCloud) => pointCloud.id === selectedId)) {
+      setSelectedId(filteredPointClouds[0].id);
+    }
+  }, [filteredPointClouds, selectedId]);
 
   return (
     <div className="module-page">
       <section className="panel module-toolbar">
         <div>
           <p className="eyebrow">cow_point_cloud</p>
-          <h2>点云文件与字段结构</h2>
+          <h2>点云查询与三维预览</h2>
         </div>
-        <button className="secondary-button">导入点云</button>
       </section>
 
-      <div className="record-grid">
-        {pointClouds.map((pointCloud) => (
-          <article className="panel record-panel" key={pointCloud.id}>
+      <div className="point-cloud-workspace">
+        <aside className="panel point-cloud-sidebar" aria-label="现有点云">
+          <div className="point-cloud-sidebar-title">
+            <p className="eyebrow">现有点云</p>
+            <h2>点云目录</h2>
+          </div>
+          <label className="search-field point-cloud-search">
+            查询点云
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="牛编号 / 点云号 / 文件名"
+            />
+          </label>
+
+          <div className="point-cloud-count">
+            <strong>{filteredPointClouds.length}</strong>
+            <span>个点云</span>
+          </div>
+
+          {visiblePointClouds.length > 0 ? (
+            <div className="point-cloud-list-items">
+              {visiblePointClouds.map((pointCloud) => (
+                <button
+                  className={
+                    selectedPointCloud?.id === pointCloud.id
+                      ? "point-cloud-list-item point-cloud-list-item-active"
+                      : "point-cloud-list-item"
+                  }
+                  key={pointCloud.id}
+                  onClick={() => setSelectedId(pointCloud.id)}
+                  type="button"
+                >
+                  <strong>{pointCloud.pointCloudNo}</strong>
+                  <span>{pointCloud.cowNo}</span>
+                  <em>{formatNumber(pointCloud.pointCount)} 点</em>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="point-cloud-empty">
+              <strong>没有匹配结果</strong>
+              <span>换一个关键词再查。</span>
+            </div>
+          )}
+
+          <div className="point-cloud-pagination">
+            <button
+              className="viewer-reset-button"
+              type="button"
+              onClick={() => setPage((value) => Math.max(1, value - 1))}
+              disabled={currentPage <= 1}
+            >
+              上一页
+            </button>
+            <span>
+              {currentPage} / {pageCount}
+            </span>
+            <button
+              className="viewer-reset-button"
+              type="button"
+              onClick={() => setPage((value) => Math.min(pageCount, value + 1))}
+              disabled={currentPage >= pageCount}
+            >
+              下一页
+            </button>
+          </div>
+        </aside>
+
+        {selectedPointCloud ? (
+          <article className="panel record-panel point-cloud-panel" key={selectedPointCloud.id}>
             <div className="panel-heading">
               <div>
-                <p className="eyebrow">{pointCloud.cowNo}</p>
-                <h2>{pointCloud.pointCloudNo}</h2>
+                <p className="eyebrow">{selectedPointCloud.cowNo}</p>
+                <h2>{selectedPointCloud.pointCloudNo}</h2>
               </div>
-              <span className="panel-note">{pointCloud.processedAt}</span>
+              <span className="panel-note">{selectedPointCloud.processedAt}</span>
             </div>
             <div className="point-cloud-file">
               <span>
                 <small>文件名</small>
-                <strong>{pointCloud.fileName}</strong>
+                <strong>{selectedPointCloud.fileName}</strong>
               </span>
               <span>
                 <small>路径</small>
-                <strong>{pointCloud.filePath}</strong>
+                <strong>{selectedPointCloud.filePath}</strong>
               </span>
             </div>
             <div className="point-cloud-summary">
               <span>
-                <strong>{pointCloud.fileFormat}</strong>
+                <strong>{selectedPointCloud.fileFormat}</strong>
                 文件格式
               </span>
               <span>
-                <strong>{formatNumber(pointCloud.pointCount)}</strong>
+                <strong>{formatNumber(selectedPointCloud.pointCount)}</strong>
                 点数量
               </span>
               <span>
-                <strong>{pointCloud.fileSizeMb} MB</strong>
+                <strong>{selectedPointCloud.fileSizeMb} MB</strong>
                 文件大小
               </span>
             </div>
-            <div className="field-schema" aria-label={`${pointCloud.pointCloudNo} 字段结构`}>
-              {pointCloud.fieldSchema.map((field) => (
+            <PointCloudViewer pointCloud={selectedPointCloud} />
+            <div className="field-schema" aria-label={`${selectedPointCloud.pointCloudNo} 字段结构`}>
+              {selectedPointCloud.fieldSchema.map((field) => (
                 <button
                   className={activeField === field ? "field-chip field-chip-active" : "field-chip"}
                   key={field}
@@ -77,8 +184,8 @@ export function PointCloudDataPage({ pointClouds }: { pointClouds: PointCloudSum
               <strong>{activeFieldInfo.name}</strong>
               <span>{activeFieldInfo.detail}</span>
             </div>
-            <div className="part-bars" role="img" aria-label={`${pointCloud.pointCloudNo} label 分布`}>
-              {pointCloud.labelStats.map((item) => (
+            <div className="part-bars" role="img" aria-label={`${selectedPointCloud.pointCloudNo} label 分布`}>
+              {selectedPointCloud.labelStats.map((item) => (
                 <div className="part-row" key={item.label}>
                   <span>{item.label}</span>
                   <div className="part-track">
@@ -89,7 +196,17 @@ export function PointCloudDataPage({ pointClouds }: { pointClouds: PointCloudSum
               ))}
             </div>
           </article>
-        ))}
+        ) : (
+          <section className="panel state-block">
+            <div className="state-glyph" />
+            <h2>{filteredPointClouds.length === 0 ? "没有匹配的点云" : "请选择点云"}</h2>
+            <p>
+              {filteredPointClouds.length === 0
+                ? "换一个牛编号、点云号或文件名再查。"
+                : "从左侧目录选择一个点云后再加载三维预览。"}
+            </p>
+          </section>
+        )}
       </div>
     </div>
   );

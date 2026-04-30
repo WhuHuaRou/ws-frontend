@@ -27,6 +27,7 @@ export interface PointCloudSummary {
   pointCloudNo: string;
   fileName: string;
   filePath: string;
+  fileUrl?: string;
   fileFormat: string;
   fileSizeMb: number;
   pointCount: number;
