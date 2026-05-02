@@ -289,6 +289,58 @@ button {
   color: #16242a;
 }
 
+.image-record > span {
+  color: #69767a;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.image-preview {
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border: 1px solid rgba(58, 71, 78, 0.12);
+  border-radius: 8px;
+  background: #101315;
+}
+
+.image-preview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.annotation-metrics {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.annotation-metrics span {
+  display: grid;
+  gap: 5px;
+  border-top: 1px solid rgba(58, 71, 78, 0.12);
+  padding-top: 12px;
+}
+
+.annotation-metrics small {
+  color: #69767a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.annotation-metrics strong {
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.annotation-summary {
+  margin: 0;
+  color: #45545a;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
 .record-footer,
 .record-meta {
   display: flex;
@@ -1088,6 +1140,86 @@ td strong {
   background:
     linear-gradient(135deg, #e2eeec, #ffffff);
   border: 1px solid rgba(58, 71, 78, 0.12);
+}
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: rgba(22, 36, 42, 0.34);
+  padding: 18px;
+}
+
+.create-dialog {
+  width: min(520px, 100%);
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
+}
+
+.create-form {
+  display: grid;
+  gap: 16px;
+}
+
+.dialog-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dialog-heading h2 {
+  margin: 4px 0 0;
+  color: #16242a;
+  font-size: 22px;
+}
+
+.form-field {
+  display: grid;
+  gap: 7px;
+  color: #5e6a70;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.form-field input,
+.form-field select {
+  min-height: 40px;
+  border: 1px solid rgba(58, 71, 78, 0.16);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #253036;
+  font: inherit;
+  padding: 0 12px;
+  outline: none;
+}
+
+.form-field input[type="file"] {
+  height: auto;
+  min-height: 44px;
+  padding: 9px 12px;
+}
+
+.form-field input:focus,
+.form-field select:focus {
+  border-color: rgba(31, 89, 101, 0.48);
+}
+
+.file-field span {
+  color: #69767a;
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid rgba(58, 71, 78, 0.12);
+  padding-top: 16px;
 }
 
 .skeleton {

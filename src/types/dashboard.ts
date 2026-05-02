@@ -46,7 +46,10 @@ export interface ImageAnnotation {
   cowNo: string;
   imageType: "眼肌图" | "背膘图";
   fileName: string;
+  fileUrl?: string;
   measurement: string;
+  eyeMuscleAreaCm2?: number;
+  backfatThicknessMm?: number;
   annotatedAt: string;
   status: AssetStatus;
 }

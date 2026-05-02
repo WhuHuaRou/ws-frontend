@@ -12,10 +12,20 @@ type AppShellProps = {
   eyebrow: string;
   title: string;
   primaryAction?: string;
+  onPrimaryAction?: () => void;
   onNavChange: (navId: string) => void;
 };
 
-export function AppShell({ children, navItems, activeNavId, eyebrow, title, primaryAction, onNavChange }: AppShellProps) {
+export function AppShell({
+  children,
+  navItems,
+  activeNavId,
+  eyebrow,
+  title,
+  primaryAction,
+  onPrimaryAction,
+  onNavChange,
+}: AppShellProps) {
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="主导航">
@@ -53,7 +63,11 @@ export function AppShell({ children, navItems, activeNavId, eyebrow, title, prim
                 <path d="M20 12a8 8 0 0 1-13.7 5.6M4 12A8 8 0 0 1 17.7 6.4M18 3v4h-4M6 21v-4h4" />
               </svg>
             </button>
-            {primaryAction ? <button className="primary-button">{primaryAction}</button> : null}
+            {primaryAction ? (
+              <button className="primary-button" onClick={onPrimaryAction} type="button">
+                {primaryAction}
+              </button>
+            ) : null}
           </div>
         </header>
         {children}

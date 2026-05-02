@@ -9,7 +9,6 @@ export function DatasetPage({ datasets }: { datasets: DatasetSummary[] }) {
           <p className="eyebrow">cow_dataset</p>
           <h2>牛只数据集</h2>
         </div>
-        <button className="secondary-button">同步数据集</button>
       </section>
 
       <section className="panel table-panel">
