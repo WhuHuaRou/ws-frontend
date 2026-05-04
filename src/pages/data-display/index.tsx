@@ -1,5 +1,7 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { createCowBasic, type CowBasicCreateInput } from "../../api/cowBasic";
 import { getDashboardData } from "../../api/dashboard";
+import { listCowNoOptions, uploadImageAnnotation } from "../../api/imageAnnotation";
 import { AppShell, type ShellNavItem } from "../../components/layout/AppShell";
 import { StateBlock } from "../../components/ui/StateBlock";
 import { CowBasicPage } from "../cow-basic";
@@ -8,10 +10,10 @@ import { ImageAnnotationPage } from "../image-annotation";
 import { LiveVideoPage } from "../live-video";
 import { PointCloudDataPage } from "../point-cloud";
 import { VideoArchivePage } from "../video-archive";
-import type { AssetStatus, DashboardData, DatasetSummary, ImageAnnotation, PointCloudSummary } from "../../types/dashboard";
+import type { AssetStatus, CowBasic, DashboardData, DatasetSummary, ImageAnnotation, PointCloudSummary } from "../../types/dashboard";
 
 type ModuleId = "cow-basic" | "dataset" | "point-cloud" | "image" | "live-video" | "archive";
-type CreateDialogKind = "dataset" | "point-cloud" | "image";
+type CreateDialogKind = "cow-basic" | "dataset" | "point-cloud" | "image";
 
 interface DatasetFormState {
   cowNo: string;
@@ -53,6 +55,7 @@ export function DataDisplayPage() {
   const [activeModule, setActiveModule] = useState<ModuleId>("cow-basic");
   const [cowKeyword, setCowKeyword] = useState("");
   const [dialogKind, setDialogKind] = useState<CreateDialogKind | null>(null);
+  const [imageRefreshSignal, setImageRefreshSignal] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -86,7 +89,7 @@ export function DataDisplayPage() {
     [activeModule],
   );
   const openCreateDialog = () => {
-    if (activeModule === "dataset" || activeModule === "point-cloud" || activeModule === "image") {
+    if (activeModule === "cow-basic" || activeModule === "dataset" || activeModule === "point-cloud" || activeModule === "image") {
       setDialogKind(activeModule);
     }
   };
@@ -108,13 +111,19 @@ export function DataDisplayPage() {
       ) : null}
 
       {!isLoading && !error && data
-        ? renderModule(activeModule, data, cowKeyword, setCowKeyword)
+        ? renderModule(activeModule, data, cowKeyword, setCowKeyword, imageRefreshSignal)
         : null}
 
       {data && dialogKind ? (
         <CreateRecordDialog
+          cows={data.cows}
           kind={dialogKind}
           onClose={() => setDialogKind(null)}
+          onCreateCow={async (form) => {
+            const nextCow = await createCowBasic(form);
+            setData((current) => (current ? { ...current, cows: [nextCow, ...current.cows] } : current));
+            setDialogKind(null);
+          }}
           onCreateDataset={(form) => {
             const nextDataset: DatasetSummary = {
               id: `DS-PROTO-${Date.now()}`,
@@ -130,30 +139,19 @@ export function DataDisplayPage() {
             );
             setDialogKind(null);
           }}
-          onCreateImage={(form) => {
-            const value = Number(form.measurementValue);
-            const isEyeMuscle = form.imageType === "眼肌图";
-            const displayName = form.displayName.trim() || form.file?.name || "未命名图片";
-            const nextImage: ImageAnnotation = {
-              id: `IMG-PROTO-${Date.now()}`,
-              cowNo: form.cowNo.trim(),
+          onCreateImage={async (form) => {
+            if (!form.file) {
+              return;
+            }
+            const nextImage = await uploadImageAnnotation({
+              cowNo: form.cowNo,
               imageType: form.imageType,
-              fileName: displayName,
-              fileUrl: form.file ? URL.createObjectURL(form.file) : undefined,
-              measurement:
-                Number.isFinite(value) && value > 0
-                  ? isEyeMuscle
-                    ? `眼肌面积 ${value} cm2`
-                    : `背膘厚度 ${value} mm`
-                  : isEyeMuscle
-                    ? "眼肌面积待复核"
-                    : "背膘厚度待复核",
-              eyeMuscleAreaCm2: isEyeMuscle && Number.isFinite(value) && value > 0 ? value : undefined,
-              backfatThicknessMm: !isEyeMuscle && Number.isFinite(value) && value > 0 ? value : undefined,
-              annotatedAt: form.annotatedAt.trim(),
-              status: Number.isFinite(value) && value > 0 ? "normal" : "warning",
-            };
+              file: form.file,
+              measurementValue: form.measurementValue,
+              collectedAt: form.annotatedAt,
+            });
             setData((current) => (current ? { ...current, images: [nextImage, ...current.images] } : current));
+            setImageRefreshSignal((value) => value + 1);
             setDialogKind(null);
           }}
           onCreatePointCloud={(form) => {
@@ -190,6 +188,7 @@ function renderModule(
   data: DashboardData,
   cowKeyword: string,
   setCowKeyword: (keyword: string) => void,
+  imageRefreshSignal: number,
 ) {
   switch (activeModule) {
     case "cow-basic":
@@ -199,7 +198,7 @@ function renderModule(
     case "point-cloud":
       return <PointCloudDataPage pointClouds={data.pointClouds} />;
     case "image":
-      return <ImageAnnotationPage images={data.images} />;
+      return <ImageAnnotationPage refreshSignal={imageRefreshSignal} />;
     case "live-video":
       return <LiveVideoPage streams={data.liveStreams} />;
     case "archive":
@@ -210,30 +209,104 @@ function renderModule(
 }
 
 function CreateRecordDialog({
+  cows,
   kind,
   onClose,
+  onCreateCow,
   onCreateDataset,
   onCreateImage,
   onCreatePointCloud,
 }: {
+  cows: CowBasic[];
   kind: CreateDialogKind;
   onClose: () => void;
+  onCreateCow: (form: CowBasicCreateInput) => void | Promise<void>;
   onCreateDataset: (form: DatasetFormState) => void;
-  onCreateImage: (form: ImageFormState) => void;
+  onCreateImage: (form: ImageFormState) => void | Promise<void>;
   onCreatePointCloud: (form: PointCloudFormState) => void;
 }) {
   return (
     <div className="dialog-backdrop" role="presentation">
-      <section className="panel create-dialog" role="dialog" aria-modal="true" aria-label="新增原型数据">
-        {kind === "dataset" ? (
+      <section className="panel create-dialog" role="dialog" aria-modal="true" aria-label="新增业务数据">
+        {kind === "cow-basic" ? (
+          <CowBasicCreateForm onClose={onClose} onSubmit={onCreateCow} />
+        ) : kind === "dataset" ? (
           <DatasetCreateForm onClose={onClose} onSubmit={onCreateDataset} />
         ) : kind === "point-cloud" ? (
           <PointCloudCreateForm onClose={onClose} onSubmit={onCreatePointCloud} />
         ) : (
-          <ImageCreateForm onClose={onClose} onSubmit={onCreateImage} />
+          <ImageCreateForm cows={cows} onClose={onClose} onSubmit={onCreateImage} />
         )}
       </section>
     </div>
+  );
+}
+
+function CowBasicCreateForm({
+  onClose,
+  onSubmit,
+}: {
+  onClose: () => void;
+  onSubmit: (form: CowBasicCreateInput) => void | Promise<void>;
+}) {
+  const [form, setForm] = useState<CowBasicCreateInput>({
+    cowNo: "",
+    cowName: "",
+    breed: "",
+    gender: "0",
+    birthDate: "",
+    farmName: "",
+    penNo: "",
+    status: "0",
+    remark: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!form.cowNo.trim()) {
+      return;
+    }
+    setIsSubmitting(true);
+    setError("");
+    try {
+      await onSubmit(form);
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "牛只保存失败");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form className="create-form" onSubmit={handleSubmit}>
+      <DialogHeading eyebrow="cow_basic" title="新增牛只" onClose={onClose} />
+      <FormField label="牛编号" value={form.cowNo} onChange={(cowNo) => setForm({ ...form, cowNo })} required />
+      <FormField label="牛只名称" value={form.cowName} onChange={(cowName) => setForm({ ...form, cowName })} />
+      <FormField label="养殖场" value={form.farmName} onChange={(farmName) => setForm({ ...form, farmName })} />
+      <FormField label="栏位编号" value={form.penNo} onChange={(penNo) => setForm({ ...form, penNo })} />
+      <FormField label="品种" value={form.breed} onChange={(breed) => setForm({ ...form, breed })} />
+      <label className="form-field">
+        性别
+        <select value={form.gender} onChange={(event) => setForm({ ...form, gender: event.target.value })}>
+          <option value="0">未知</option>
+          <option value="1">公</option>
+          <option value="2">母</option>
+        </select>
+      </label>
+      <FormField label="出生日期" type="date" value={form.birthDate} onChange={(birthDate) => setForm({ ...form, birthDate })} />
+      <label className="form-field">
+        状态
+        <select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })}>
+          <option value="0">正常</option>
+          <option value="1">停用</option>
+        </select>
+      </label>
+      <FormField label="备注" value={form.remark} onChange={(remark) => setForm({ ...form, remark })} />
+      {error ? <p className="form-error">{error}</p> : null}
+      <DialogActions disabled={isSubmitting} onClose={onClose} submitText={isSubmitting ? "保存中" : "保存牛只"} />
+    </form>
   );
 }
 
@@ -341,12 +414,16 @@ function PointCloudCreateForm({
 }
 
 function ImageCreateForm({
+  cows,
   onClose,
   onSubmit,
 }: {
+  cows: CowBasic[];
   onClose: () => void;
-  onSubmit: (form: ImageFormState) => void;
+  onSubmit: (form: ImageFormState) => void | Promise<void>;
 }) {
+  const fallbackCowNos = useMemo(() => cows.map((cow) => cow.cowNo), [cows]);
+  const [cowNoOptions, setCowNoOptions] = useState<string[]>(fallbackCowNos);
   const [form, setForm] = useState<ImageFormState>({
     cowNo: "",
     imageType: "眼肌图",
@@ -355,19 +432,53 @@ function ImageCreateForm({
     measurementValue: "",
     annotatedAt: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (event: FormEvent) => {
+  useEffect(() => {
+    let isMounted = true;
+
+    listCowNoOptions(form.cowNo)
+      .then((options) => {
+        if (isMounted) {
+          setCowNoOptions(options.length > 0 ? options : fallbackCowNos);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setCowNoOptions(fallbackCowNos);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [fallbackCowNos, form.cowNo]);
+
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!form.cowNo.trim() || !form.displayName.trim() || !form.file) {
+    if (!form.cowNo.trim() || !form.file) {
       return;
     }
-    onSubmit(form);
+    if (!isKnownCowNo(cowNoOptions, form.cowNo)) {
+      setError("请选择牛只档案中已有的牛编号");
+      return;
+    }
+    setIsSubmitting(true);
+    setError("");
+    try {
+      await onSubmit(form);
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "图像保存失败");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <form className="create-form" onSubmit={handleSubmit}>
       <DialogHeading eyebrow="cow_image" title="新增图像" onClose={onClose} />
-      <FormField label="牛编号" value={form.cowNo} onChange={(cowNo) => setForm({ ...form, cowNo })} required />
+      <CowNoField options={cowNoOptions} value={form.cowNo} onChange={(cowNo) => setForm({ ...form, cowNo })} required />
       <label className="form-field">
         图像类型
         <select
@@ -383,7 +494,6 @@ function ImageCreateForm({
         value={form.displayName}
         onChange={(displayName) => setForm({ ...form, displayName })}
         placeholder="例如 眼肌1 或 201454眼肌"
-        required
       />
       <FileField
         accept="image/*"
@@ -403,11 +513,83 @@ function ImageCreateForm({
         type="number"
         value={form.measurementValue}
         onChange={(measurementValue) => setForm({ ...form, measurementValue })}
-        placeholder="留空则标记待复核"
+        placeholder="留空则标记待定"
       />
       <FormField label="标注时间" value={form.annotatedAt} onChange={(annotatedAt) => setForm({ ...form, annotatedAt })} />
-      <DialogActions onClose={onClose} submitText="保存图像" />
+      {error ? <p className="form-error">{error}</p> : null}
+      <DialogActions disabled={isSubmitting} onClose={onClose} submitText={isSubmitting ? "保存中" : "保存图像"} />
     </form>
+  );
+}
+
+function isKnownCowNo(cowNoOptions: string[], cowNo: string) {
+  const normalizedCowNo = cowNo.trim();
+  return cowNoOptions.includes(normalizedCowNo);
+}
+
+function CowNoField({
+  onChange,
+  options,
+  required,
+  value,
+}: {
+  onChange: (value: string) => void;
+  options: string[];
+  required?: boolean;
+  value: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const filteredOptions = useMemo(() => {
+    const keyword = value.trim().toLowerCase();
+    if (!keyword) {
+      return options.slice(0, 8);
+    }
+    return options.filter((cowNo) => cowNo.toLowerCase().includes(keyword)).slice(0, 8);
+  }, [options, value]);
+
+  return (
+    <label className="form-field cow-no-field">
+      牛编号
+      <div className="cow-select">
+        <input
+          value={value}
+          onChange={(event) => {
+            onChange(event.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          placeholder="搜索牛编号"
+          required={required}
+        />
+        <button className="cow-select-toggle" type="button" onClick={() => setIsOpen((current) => !current)}>
+          <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+            <path d="m7 10 5 5 5-5" />
+          </svg>
+        </button>
+        {isOpen ? (
+          <div className="cow-select-menu">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((cowNo) => (
+                <button
+                  key={cowNo}
+                  className={cowNo === value ? "cow-select-option cow-select-option-active" : "cow-select-option"}
+                  type="button"
+                  onClick={() => {
+                    onChange(cowNo);
+                    setIsOpen(false);
+                  }}
+                >
+                  <span>{cowNo}</span>
+                </button>
+              ))
+            ) : (
+              <span className="cow-select-empty">没有匹配的已登记牛编号</span>
+            )}
+          </div>
+        ) : null}
+      </div>
+      <span className="form-help">只能使用牛只档案中已登记的 cow_no。</span>
+    </label>
   );
 }
 
@@ -483,13 +665,21 @@ function FileField({
   );
 }
 
-function DialogActions({ onClose, submitText }: { onClose: () => void; submitText: string }) {
+function DialogActions({
+  disabled,
+  onClose,
+  submitText,
+}: {
+  disabled?: boolean;
+  onClose: () => void;
+  submitText: string;
+}) {
   return (
     <div className="dialog-actions">
-      <button className="secondary-button" onClick={onClose} type="button">
+      <button className="secondary-button" disabled={disabled} onClick={onClose} type="button">
         取消
       </button>
-      <button className="primary-button" type="submit">
+      <button className="primary-button" disabled={disabled} type="submit">
         {submitText}
       </button>
     </div>

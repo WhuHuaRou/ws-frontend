@@ -2,41 +2,8 @@ import type { DashboardData } from "../types/dashboard";
 
 const prototypeAssetBase = `${import.meta.env.BASE_URL}prototype-data/`;
 const pointCloudAssetBase = `${prototypeAssetBase}point-cloud/`;
-const imageAnnotationAssetBase = `${prototypeAssetBase}image-annotation/`;
 
-export const dashboardMock: DashboardData = {
-  cows: [
-    {
-      cowNo: "CN-240317",
-      pen: "A-17",
-      breed: "西门塔尔",
-      gender: "母牛",
-      ageMonth: 22,
-      weightKg: 486.5,
-      status: "在栏",
-      lastCollectedAt: "2026-04-29 09:42",
-    },
-    {
-      cowNo: "CN-240621",
-      pen: "B-04",
-      breed: "安格斯",
-      gender: "公牛",
-      ageMonth: 19,
-      weightKg: 512.8,
-      status: "观察",
-      lastCollectedAt: "2026-04-29 08:16",
-    },
-    {
-      cowNo: "CN-241102",
-      pen: "C-12",
-      breed: "荷斯坦",
-      gender: "母牛",
-      ageMonth: 16,
-      weightKg: 438.2,
-      status: "在栏",
-      lastCollectedAt: "2026-04-28 17:55",
-    },
-  ],
+export const dashboardMock: Omit<DashboardData, "cows"> = {
   datasets: [
     {
       id: "DS-7418",
@@ -188,73 +155,7 @@ export const dashboardMock: DashboardData = {
       ],
     },
   ],
-  images: [
-    {
-      id: "IMG-EYE-1",
-      cowNo: "原型1",
-      imageType: "眼肌图",
-      fileName: "眼肌1.png",
-      fileUrl: `${imageAnnotationAssetBase}眼肌1.png`,
-      measurement: "眼肌面积 82.6 cm2",
-      eyeMuscleAreaCm2: 82.6,
-      annotatedAt: "2025-05-13 18:20",
-      status: "normal",
-    },
-    {
-      id: "IMG-BACKFAT-1",
-      cowNo: "原型1",
-      imageType: "背膘图",
-      fileName: "背膘1.png",
-      fileUrl: `${imageAnnotationAssetBase}背膘1.png`,
-      measurement: "背膘厚度 7.6 mm",
-      backfatThicknessMm: 7.6,
-      annotatedAt: "2025-05-13 09:24",
-      status: "normal",
-    },
-    {
-      id: "IMG-EYE-2",
-      cowNo: "原型2",
-      imageType: "眼肌图",
-      fileName: "眼肌2.png",
-      fileUrl: `${imageAnnotationAssetBase}眼肌2.png`,
-      measurement: "眼肌面积 84.1 cm2",
-      eyeMuscleAreaCm2: 84.1,
-      annotatedAt: "2025-05-13 18:08",
-      status: "normal",
-    },
-    {
-      id: "IMG-BACKFAT-2",
-      cowNo: "原型2",
-      imageType: "背膘图",
-      fileName: "背膘2.png",
-      fileUrl: `${imageAnnotationAssetBase}背膘2.png`,
-      measurement: "背膘厚度 7.1 mm",
-      backfatThicknessMm: 7.1,
-      annotatedAt: "2025-05-13 17:10",
-      status: "normal",
-    },
-    {
-      id: "IMG-EYE-3",
-      cowNo: "原型3",
-      imageType: "眼肌图",
-      fileName: "眼肌3.png",
-      fileUrl: `${imageAnnotationAssetBase}眼肌3.png`,
-      measurement: "眼肌面积待复核",
-      annotatedAt: "2025-05-15 06:49",
-      status: "warning",
-    },
-    {
-      id: "IMG-BACKFAT-3",
-      cowNo: "原型3",
-      imageType: "背膘图",
-      fileName: "背膘3.png",
-      fileUrl: `${imageAnnotationAssetBase}背膘3.png`,
-      measurement: "背膘厚度 7.9 mm",
-      backfatThicknessMm: 7.9,
-      annotatedAt: "2025-05-13 09:35",
-      status: "normal",
-    },
-  ],
+  images: [],
   liveStreams: [
     {
       id: "VS-1207",

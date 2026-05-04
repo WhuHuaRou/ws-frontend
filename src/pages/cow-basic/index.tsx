@@ -7,7 +7,12 @@ type CowBasicPageProps = {
 };
 
 export function CowBasicPage({ cows, keyword, onKeywordChange }: CowBasicPageProps) {
-  const filteredCows = cows.filter((cow) => cow.cowNo.toLowerCase().includes(keyword.trim().toLowerCase()));
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  const filteredCows = cows.filter((cow) =>
+    [cow.cowNo, cow.cowName, cow.farmName, cow.penNo, cow.breed]
+      .filter(Boolean)
+      .some((value) => value?.toLowerCase().includes(normalizedKeyword)),
+  );
 
   return (
     <div className="module-page">
@@ -17,45 +22,55 @@ export function CowBasicPage({ cows, keyword, onKeywordChange }: CowBasicPagePro
           <h2>牛只基础档案</h2>
         </div>
         <label className="search-field">
-          <span>牛编号</span>
-          <input value={keyword} onChange={(event) => onKeywordChange(event.target.value)} placeholder="输入 cow_no" />
+          <span>档案检索</span>
+          <input value={keyword} onChange={(event) => onKeywordChange(event.target.value)} placeholder="牛编号 / 名称 / 栏位" />
         </label>
       </section>
 
-      <section className="panel table-panel">
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>牛编号</th>
-                <th>栏位</th>
-                <th>品种</th>
-                <th>性别</th>
-                <th>月龄</th>
-                <th>体重</th>
-                <th>状态</th>
-                <th>最近采集</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCows.map((cow) => (
-                <tr key={cow.cowNo}>
-                  <td>
-                    <strong>{cow.cowNo}</strong>
-                  </td>
-                  <td>{cow.pen}</td>
-                  <td>{cow.breed}</td>
-                  <td>{cow.gender}</td>
-                  <td>{cow.ageMonth} 月</td>
-                  <td>{cow.weightKg} kg</td>
-                  <td>{cow.status}</td>
-                  <td>{cow.lastCollectedAt}</td>
+      {filteredCows.length > 0 ? (
+        <section className="panel table-panel">
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>牛编号</th>
+                  <th>牛只名称</th>
+                  <th>养殖场</th>
+                  <th>栏位</th>
+                  <th>品种</th>
+                  <th>性别</th>
+                  <th>出生日期</th>
+                  <th>状态</th>
+                  <th>备注</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                {filteredCows.map((cow) => (
+                  <tr key={cow.cowNo}>
+                    <td>
+                      <strong>{cow.cowNo}</strong>
+                    </td>
+                    <td>{cow.cowName || "-"}</td>
+                    <td>{cow.farmName || "-"}</td>
+                    <td>{cow.penNo || "-"}</td>
+                    <td>{cow.breed || "-"}</td>
+                    <td>{cow.gender}</td>
+                    <td>{cow.birthDate || "-"}</td>
+                    <td>{cow.status}</td>
+                    <td>{cow.remark || "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : (
+        <section className="panel state-block compact-empty-state">
+          <div className="state-glyph" />
+          <h2>暂无牛只数据</h2>
+          <p>没有查询到牛只基础档案。</p>
+        </section>
+      )}
     </div>
   );
 }

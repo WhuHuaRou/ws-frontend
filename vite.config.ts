@@ -6,5 +6,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    proxy: {
+      "/cow": "http://localhost",
+      "/profile": "http://localhost",
+      "/common": "http://localhost",
+    },
   },
 });

@@ -11,39 +11,47 @@ export function DatasetPage({ datasets }: { datasets: DatasetSummary[] }) {
         </div>
       </section>
 
-      <section className="panel table-panel">
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>数据集编号</th>
-                <th>牛编号</th>
-                <th>文件数</th>
-                <th>访问地址</th>
-                <th>采集时间</th>
-                <th>状态</th>
-              </tr>
-            </thead>
-            <tbody>
-              {datasets.map((dataset) => (
-                <tr key={dataset.id}>
-                  <td>
-                    <strong>{dataset.datasetCode}</strong>
-                    <span>{dataset.id}</span>
-                  </td>
-                  <td>{dataset.cowNo}</td>
-                  <td>{dataset.fileCount}</td>
-                  <td>{dataset.datasetUrl}</td>
-                  <td>{dataset.collectedAt}</td>
-                  <td>
-                    <span className={statusClassName(dataset.status)}>{statusLabel(dataset.status)}</span>
-                  </td>
+      {datasets.length > 0 ? (
+        <section className="panel table-panel">
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>数据集编号</th>
+                  <th>牛编号</th>
+                  <th>文件数</th>
+                  <th>访问地址</th>
+                  <th>采集时间</th>
+                  <th>状态</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                {datasets.map((dataset) => (
+                  <tr key={dataset.id}>
+                    <td>
+                      <strong>{dataset.datasetCode}</strong>
+                      <span>{dataset.id}</span>
+                    </td>
+                    <td>{dataset.cowNo}</td>
+                    <td>{dataset.fileCount}</td>
+                    <td>{dataset.datasetUrl}</td>
+                    <td>{dataset.collectedAt}</td>
+                    <td>
+                      <span className={statusClassName(dataset.status)}>{statusLabel(dataset.status)}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : (
+        <section className="panel state-block compact-empty-state">
+          <div className="state-glyph" />
+          <h2>暂无数据集</h2>
+          <p>没有查询到牛只数据集记录。</p>
+        </section>
+      )}
     </div>
   );
 }

@@ -1,14 +1,18 @@
 export type AssetStatus = "normal" | "warning" | "offline";
 
 export interface CowBasic {
+  id?: string;
   cowNo: string;
-  pen: string;
-  breed: string;
+  cowName?: string;
+  breed?: string;
   gender: string;
-  ageMonth: number;
-  weightKg: number;
-  status: "在栏" | "观察" | "转出";
-  lastCollectedAt: string;
+  genderCode?: string;
+  birthDate?: string;
+  farmName?: string;
+  penNo?: string;
+  status: string;
+  statusCode?: string;
+  remark?: string;
 }
 
 export interface DatasetSummary {

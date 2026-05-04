@@ -8,8 +8,8 @@
 
 - Vite + React + TypeScript：负责应用开发、类型约束和构建。
 - CSS 变量 + 模块化目录：当前不依赖 UI 组件库，方便在依赖安装前直接维护页面。
-- API 适配层：`src/api` 统一承接 mock 或后端 REST API。
-- Mock 数据层：`src/mocks` 存放展示数据，后续可逐步删除。
+- API 适配层：`src/api` 统一承接后端 REST API 和仍未接入模块的临时数据适配。
+- Mock 数据层：`src/mocks` 仅存放尚未接入后端的展示数据；已接入接口的模块不再保留对应 mock。
 - 原型静态资源：`front/public/prototype-data` 存放当前原型点云、眼肌图片和背膘图片，供浏览器直接访问。
 
 ## 目录职责
@@ -44,6 +44,10 @@ src/
 - 实时视频访问。
 - 实时视频与每小时备份分段。
 - 加载、空数据、错误状态。
+
+### 牛只档案页面约定
+
+`cow-basic/` 分界面已接入后端 `/cow/basic/list` 和 `/cow/basic/add`，对应牛只档案 mock 已删除。页面展示字段与 `cow_basic` 表对齐：牛编号、牛只名称、养殖场、栏位编号、品种、性别、出生日期、状态和备注。顶部“新增牛只”按钮会打开新增弹窗并写入后端；牛编号由后端校验唯一性，新增成功后前端将记录插入当前列表顶部。
 
 ## 点云页面约定
 
@@ -103,17 +107,17 @@ front/public/prototype-data/image-annotation/
 原型数据示例/眼肌背膘数据示例/
 ```
 
-页面由 `src/mocks/dashboard.ts` 提供 `fileUrl`、图片类型、对应指标和标注时间。`眼肌图` 记录只展示 `eyeMuscleAreaCm2`，`背膘图` 记录只展示 `backfatThicknessMm`。当前指标值仍是原型展示口径；后续接入真实算法或人工标注结果时，只需要替换 mock 或后端返回字段，页面继续按 `cow_image` 模型展示图片、文件名、状态和对应标注值。
+页面由后端 `/cow/image/list` 提供图像记录，`眼肌图` 记录只展示 `eyeMuscleAreaCm2`，`背膘图` 记录只展示 `backfatThicknessMm`。上传图像时，牛编号不再自由填写，而是通过 `/cow/image/cowNoOptions` 从 `cow_basic` 中搜索并选择已有 `cow_no`；前端提交前会校验选中的编号必须来自候选列表，后端上传和元数据写入时也会再次校验，避免图像记录挂到不存在的牛只档案。上传成功后，前端会触发图像列表重新请求 `/cow/image/list`，确保当前页面展示后端最新记录。图片地址使用若依 `/profile/**` 资源映射，开发态 Vite 已代理 `/profile` 到后端；如果图片资源加载失败，图像卡片会显示失败路径，便于定位文件服务或代理问题。后续接入真实算法或人工标注结果时，页面继续按 `cow_image` 模型展示图片、文件名、状态和对应标注值。
 
 ## 接口接入方式
 
-当前 `src/api/dashboard.ts` 会在没有 `VITE_API_BASE_URL` 时读取 mock 数据。后续接入后端时，在 `.env.development` 中设置：
+当前牛只档案和图像标注已接入后端接口；数据集、点云数据、实时视频和视频备份仍使用 `src/mocks/dashboard.ts` 中的临时数据。开发态可在 `.env.development` 中设置：
 
 ```text
 VITE_API_BASE_URL=http://localhost:8080
 ```
 
-然后让后端提供：
+若后续需要聚合总览页，可再让后端提供：
 
 ```text
 GET /cow/dashboard/overview
@@ -133,11 +137,11 @@ GET /cow/dashboard/overview
 
 ## 原型新增能力
 
-当前顶部主按钮中的 `新增数据集`、`导入点云`、`上传图片` 已接入原型弹窗。提交后只写入当前浏览器页面的 React 内存状态，用于演示新增交互和列表即时更新；刷新页面后会重新回到 `src/mocks/dashboard.ts` 的初始 mock 数据。
+当前顶部主按钮中的 `新增牛只`、`上传图片` 已接入后端接口；`新增数据集`、`导入点云` 仍是前端原型交互，提交后只写入当前浏览器页面的 React 内存状态，用于演示新增交互和列表即时更新；刷新页面后会重新回到 `src/mocks/dashboard.ts` 中对应模块的初始 mock 数据。
 
-原型阶段的 `导入点云` 和 `上传图片` 使用浏览器文件选择框。用户先选择本地文件，再填写点云号或图片展示名称；页面通过 `URL.createObjectURL(file)` 生成临时访问地址，因此可以立即预览本次选择的点云或图片。
+原型阶段的 `导入点云` 使用浏览器文件选择框。用户先选择本地文件，再填写点云号；页面通过 `URL.createObjectURL(file)` 生成临时访问地址，因此可以立即预览本次选择的点云。
 
-当前不会真正上传文件到磁盘，也不会写入后端数据库。临时文件 URL 只在当前浏览器页面生命周期内有效；刷新页面后，上传文件和新增记录都会丢失。后续接入后端时，应将文件上传到若依文件服务或专门的点云文件服务，再由接口返回持久化后的 `fileUrl`。
+当前点云导入不会真正上传文件到磁盘，也不会写入后端数据库。临时文件 URL 只在当前浏览器页面生命周期内有效；刷新页面后，点云上传文件和新增记录都会丢失。后续接入后端时，应将文件上传到若依文件服务或专门的点云文件服务，再由接口返回持久化后的 `fileUrl`。
 
 ## 原型视觉优化方向
 
@@ -164,7 +168,7 @@ GET /cow/dashboard/overview
 
 ## GitHub Pages 部署
 
-当前前端可以直接以静态站形式部署到 GitHub Pages。演示原型时不配置 `VITE_API_BASE_URL`，页面会自动使用 mock 数据。
+当前前端可以直接以静态站形式部署到 GitHub Pages。牛只档案和图像标注已依赖后端接口；如果演示环境不配置 `VITE_API_BASE_URL` 或没有可访问后端，这两个模块会显示接口错误或空数据，而不会回退到 mock。
 
 发布前先在本地执行 `npm run build` 自检，确认通过后再推送到 GitHub。GitHub Actions 仍会执行 `npm install` 和 `npm run build`，构建通过后把生成的 `dist/` 作为 GitHub Pages artifact 上传。
 
