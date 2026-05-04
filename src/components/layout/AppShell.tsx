@@ -26,6 +26,9 @@ export function AppShell({
   onPrimaryAction,
   onNavChange,
 }: AppShellProps) {
+  const activeIndex = navItems.findIndex((item) => item.id === activeNavId) + 1;
+  const activeLabel = navItems.find((item) => item.id === activeNavId)?.label ?? "";
+
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="主导航">
@@ -37,15 +40,22 @@ export function AppShell({
           </div>
         </div>
 
+        <div className="sidebar-status" aria-label="原型状态">
+          <span>Prototype Build</span>
+          <strong>Mock data only</strong>
+        </div>
+
         <nav className="sidebar-nav">
-          {navItems.map((item) => (
+          {navItems.map((item, index) => (
             <button
               className={activeNavId === item.id ? "nav-item nav-item-active" : "nav-item"}
               key={item.id}
               onClick={() => onNavChange(item.id)}
             >
-              <span className="nav-dot" aria-hidden="true" />
-              {item.label}
+              <span className="nav-index" aria-hidden="true">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span>{item.label}</span>
             </button>
           ))}
         </nav>
@@ -53,9 +63,17 @@ export function AppShell({
 
       <main className="main-area">
         <header className="topbar">
-          <div>
-            <p className="eyebrow">{eyebrow}</p>
+          <div className="topbar-title">
+            <p className="eyebrow">
+              {eyebrow}
+              <span>{String(activeIndex).padStart(2, "0")}</span>
+            </p>
             <h1>{title}</h1>
+            <div className="topbar-context" aria-label="当前工作区">
+              <span>{activeLabel}</span>
+              <span>cow_no as primary query key</span>
+              <span>frontend prototype</span>
+            </div>
           </div>
           <div className="topbar-actions">
             <button className="icon-button" aria-label="刷新数据">
