@@ -25,7 +25,7 @@ client-prototype/
 如果部署到 GitHub Pages，可以访问：
 
 ```
-https://WhuHuaRou.github.io/ws-frontend/client-prototype/
+https://WhuHuaRou.github.io/ws-frontend/
 ```
 
 ## Mock 数据

@@ -168,13 +168,13 @@ GET /cow/dashboard/overview
 
 ## GitHub Pages 部署
 
-当前前端可以直接以静态站形式部署到 GitHub Pages。牛只档案和图像标注已依赖后端接口；如果演示环境不配置 `VITE_API_BASE_URL` 或没有可访问后端，这两个模块会显示接口错误或空数据，而不会回退到 mock。
+当前 GitHub Pages 已切换为直接发布静态原型目录 `front/client-prototype/`，不再构建 Vite 的 `dist/`。部署后的站点根路径就是甲方原型页面：
 
-发布前先在本地执行 `npm run build` 自检，确认通过后再推送到 GitHub。GitHub Actions 仍会执行 `npm install` 和 `npm run build`，构建通过后把生成的 `dist/` 作为 GitHub Pages artifact 上传。
+```text
+https://WhuHuaRou.github.io/ws-frontend/
+```
 
-构建命令中的 `tsc -b` 会执行严格类型检查。`tsconfig.node.json` 需要显式声明 `target` 和 `lib`，避免检查 Vite 配置及依赖类型时缺少 `Promise.finally`、`Iterable`、`Map`、`Set` 等现代 JavaScript 类型。
-
-点云三维预览依赖 Three.js 及其 TypeScript 类型声明。部署环境会全新安装依赖后执行严格类型检查，因此 `package.json` 需要同时声明 `three` 和 `@types/three`，避免本地开发服务器可运行但 GitHub Pages 构建被 `tsc -b` 拦截。
+这样做的目的，是让线上演示环境稳定停留在 mock 原型，不依赖后端接口，也不受构建结果影响。真实 React 前端仍保留在 `src/` 中继续开发，但不会作为当前 Pages 输出。
 
 ## 独立甲方原型目录
 
