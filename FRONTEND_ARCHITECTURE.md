@@ -175,3 +175,26 @@ GET /cow/dashboard/overview
 构建命令中的 `tsc -b` 会执行严格类型检查。`tsconfig.node.json` 需要显式声明 `target` 和 `lib`，避免检查 Vite 配置及依赖类型时缺少 `Promise.finally`、`Iterable`、`Map`、`Set` 等现代 JavaScript 类型。
 
 点云三维预览依赖 Three.js 及其 TypeScript 类型声明。部署环境会全新安装依赖后执行严格类型检查，因此 `package.json` 需要同时声明 `three` 和 `@types/three`，避免本地开发服务器可运行但 GitHub Pages 构建被 `tsc -b` 拦截。
+
+## 独立甲方原型目录
+
+当前仓库额外提供一个完全从业务前端中剥离出来的静态原型目录：
+
+```text
+front/client-prototype/
+```
+
+该目录用于给甲方演示，不依赖 Vite、React、后端接口或构建流程，直接打开 `index.html` 即可查看。原型目录内包含：
+
+- `index.html`：静态入口。
+- `styles.css`：驾驶舱总览和工作台样式。
+- `app.js`：总览、模块切换、弹窗新增和 mock 内存态交互。
+- `mock-data.js`：牛只档案、数据集、点云、图像、实时视频、视频备份的演示数据。
+- `assets/`：整牛主视觉、眼肌图、背膘图等演示图片。
+
+原型页面分为两层：
+
+- 总览驾驶舱：适合先给甲方讲六模块资产范围和牛只主线。
+- 模块工作台：适合逐个展开牛只档案、点云、图像、视频等模块细节。
+
+该目录中的新增操作只写入浏览器当前页面内存，刷新后恢复初始 mock 数据。它的目标是快速评审展示，不替代 `src/` 下的真实业务前端。
