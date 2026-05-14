@@ -751,7 +751,7 @@ button { font: inherit; }
 
 .prototype-sidebar {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto 1fr;
   gap: 18px;
   padding: 22px 18px;
   background: #13201d;

@@ -412,9 +412,9 @@
       '<main class="command-center">' +
       '<div class="command-stars"></div><div class="command-scan-grid"></div>' +
       '<header class="command-header">' +
-      '<div class="command-status-mark"><span>Prototype</span><strong>甲方演示静态原型</strong></div>' +
+      '<div class="command-status-mark"><span>Command View</span><strong>多模态资产总览</strong></div>' +
       '<div class="command-title-frame"><span></span><h1>整牛多模态数据驾驶舱</h1><span></span></div>' +
-      '<div class="command-ops"><span>纯前端 mock</span><strong id="clock">00:00:00</strong></div>' +
+      '<div class="command-ops"><span>在线运行</span><strong id="clock">00:00:00</strong></div>' +
       "</header>" +
       '<section class="command-kpis">' +
       kpiHtml +
@@ -460,7 +460,7 @@
     const modules = getModules();
     return (
       '<aside class="prototype-sidebar">' +
-      '<div class="prototype-sidebar-head"><span>Client Prototype</span><strong>多模态工作台</strong></div>' +
+      '<div class="prototype-sidebar-head"><span>Command Center</span><strong>多模态工作台</strong></div>' +
       '<nav class="prototype-nav">' +
       modules
         .map(function (module, index) {
@@ -482,7 +482,6 @@
         })
         .join("") +
       "</nav>" +
-      '<div class="prototype-sidebar-foot"><p>独立静态目录</p><strong>刷新页面后恢复初始 mock</strong></div>' +
       "</aside>"
     );
   }
@@ -621,7 +620,7 @@
           return Math.round(item.ratio * 10);
         }),
       ) +
-      '<p>原型阶段用字段统计和趋势图代替真实三维渲染，避免额外依赖。</p></div>' +
+      "</div>" +
       '<div class="field-chip-row">' +
       selected.fieldSchema
         .map(function (fieldName) {
@@ -804,7 +803,7 @@
         inputField("breed", "品种", "例如 西门塔尔") +
         inputField("gender", "性别", "公 / 母 / 未知") +
         inputField("birthDate", "出生日期", "2025-01-08") +
-        inputField("remark", "备注", "当前批次原型新增") +
+        inputField("remark", "备注", "当前批次新增") +
         dialogActions("保存牛只") +
         "</form>"
       );
